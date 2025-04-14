@@ -56,7 +56,7 @@ int main() {
 	socklen_t len = sizeof(peer);
 	uint64_t last_sent = 0;
 
-	while (1) {
+	do {
 		uint64_t now = time(NULL) * 1000;
 		if (now - last_sent >= INTERVAL) {
 			sendto(sock, MSG, strlen(MSG), 0,
@@ -74,7 +74,9 @@ int main() {
 				       inet_ntoa(peer.sin_addr));
 			}
 		}
-	}
+
+		sleep(1);
+	} while (0);
 
 	return 0;
 }

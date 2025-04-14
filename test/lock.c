@@ -16,11 +16,11 @@ void *get_sum(void *arg) {
 
 int main() {
 	long sum = 0;
-	pthread_t thread1;
-	pthread_attr_t attr;
+	// pthread_t thread1;
+	// pthread_attr_t attr;
 
-	pthread_attr_init(&attr);
-	pthread_create(&thread1, &attr, get_sum, &sum);
+	// pthread_attr_init(&attr);
+	// pthread_create(&thread1, &attr, get_sum, &sum);
 
 	return 0;
 }

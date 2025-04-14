@@ -17,15 +17,5 @@ __attribute__((destructor)) void __free_tables() {
 }
 
 int main(int argc, char **argv) {
-	if (argc < 1)
-		goto usage;
-	count = atoi(argv[1]);
-
 	seed_virtual_ips(count);
-
-usage:
-	fprintf(stdout,
-		"usage <%s>: defaults to 10 unless you pass an argument",
-		argv[0]);
-	return 0;
 }

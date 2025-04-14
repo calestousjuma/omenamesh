@@ -116,9 +116,9 @@ OMENAMESH_API struct __table *tables;
 #define ADDRESS_LEN 16
 
 /*!mem.c*/
-extern void *xcalloc(i64__CJLF members, i64__CJLF block);
-extern void *xmalloc(i64__CJLF block);
-void *xrealloc(__CJLF_GENERICS *oldptr, i64__CJLF new_size);
+extern void *xcalloc(size_t members, size_t block);
+extern void *xmalloc(size_t block);
+void *xrealloc(void *oldptr, size_t new_size);
 
 #define SWAP(T, a, b)    \
 	do {             \

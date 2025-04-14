@@ -13,12 +13,8 @@ OMENAMESH_API PacketQueue recv_queue;
 typedef PacketQueue ThreadContextPacket;
 
 typedef struct {
-	// union {
-	// int client_sockfd;
-	// int serv_sockfd;
-	// } fd;
-	i32__CJLF client_sockfd;
-	i32__CJLF serv_sockfd;
+	// send & rcv msgs
+	i32__CJLF socket;
 	char my_ip[ADDRESS];
 	ThreadContextPacket *recv_q;
 	ThreadContextPacket *send_q;
@@ -30,8 +26,7 @@ typedef struct Connection {
 	MeshNode *nodes[MAX_NODES];
 	/*this is the dns thingy i was talking about in net.h*/
 	char *names[MAX_NODES];
-	i32__CJLF client_sockfd;
-	i32__CJLF server_sockfd;
+	i32__CJLF conn_sock;
 	i64__CJLF count;
 } Connection;
 

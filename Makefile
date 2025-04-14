@@ -1,5 +1,5 @@
 
-CFLAGS := -g -O0 -fPIC -Iinclude -Isrc 
+CFLAGS :=  -fPIC -Iinclude -Isrc 
 LDFLAGS := -shared
 BUILD_DIR := build
 ENTRY := boot
@@ -32,6 +32,8 @@ $(BUILD_DIR)/%.o: $(VIRT_DIR)/%.c | $(BUILD_DIR)
 
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
+
+ 
 
 clean:
 	rm -rf $(BUILD_DIR)

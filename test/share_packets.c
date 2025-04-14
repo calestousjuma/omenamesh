@@ -10,7 +10,7 @@ void *send_packet(void *arg) {
 	VirtualPacket *packet = (VirtualPacket *)arg;
 	// Logic for sending the packet across a socket (e.g., using sendto() or
 	// sendmsg)
-	printf("Sending packet with toAddr: %ld and payload size: %d\n",
+	printf("Sending packet with toAddr: %llu and payload size: %d\n",
 	       packet->header->toAddr, packet->header->payloadSize);
 	return NULL;
 }
@@ -18,45 +18,48 @@ void *send_packet(void *arg) {
 void *receive_packet(void *arg) {
 	VirtualPacket *packet = arg;
 
-	printf("Received packet fromAddr: %ld and hop count: %d\n",
+	printf("Received packet fromAddr: %llu and hop count: %d\n",
 	       packet->header->fromAddr, packet->header->hopCount);
 	return NULL;
 }
 
 int main() {
-	VirtualPacket packet;
+	// VirtualPacket packet;
 
-	struct __virtual_header header = {
-		.toAddr = 12345,
-		.toPort = 8080,
-		.fromAddr = 54321,
-		.fromPort = 9090,
-		.lastHopAddr = 12345,
-		.hopCount = 1,
-		.maxHops = 5,
-		.payloadSize = 512, /*strict MTU*/
-	};
+	// struct __virtual_header header = {
+	// 	.toAddr = 12345,
+	// 	.toPort = 8080,
+	// 	.fromAddr = 54321,
+	// 	.fromPort = 9090,
+	// 	.lastHopAddr = 12345,
+	// 	.hopCount = 1,
+	// 	.maxHops = 5,
+	// 	.payloadSize = 512, /*strict MTU*/
+	// };
 
-	packet.header = &header;
-	packet._IO_buf_base = (char *)xmalloc(HEADER_SIZE + header.payloadSize);
+	// packet.header = &header;
+	// packet._IO_buf_base = (char *)xmalloc(HEADER_SIZE +
+	// header.payloadSize);
 
-	// Allocate space for the payload data (this is a simple example, you'd
-	// handle payload appropriately)
-	packet.data = packet._IO_buf_base + HEADER_SIZE;
+	// // Allocate space for the payload data (this is a simple example,
+	// you'd
+	// // handle payload appropriately)
+	// packet.data = packet._IO_buf_base + HEADER_SIZE;
 
-	pthread_t sender_thread, receiver_thread;
+	// pthread_t sender_thread, receiver_thread;
 
-	// Create a sender thread to simulate sending a packet
-	pthread_create(&sender_thread, NULL, send_packet, (void *)&packet);
+	// // Create a sender thread to simulate sending a packet
+	// pthread_create(&sender_thread, NULL, send_packet, (void *)&packet);
 
-	// Create a receiver thread to simulate receiving a packet
-	pthread_create(&receiver_thread, NULL, receive_packet, (void *)&packet);
+	// // Create a receiver thread to simulate receiving a packet
+	// pthread_create(&receiver_thread, NULL, receive_packet, (void
+	// *)&packet);
 
-	// Wait for threads to finish
-	pthread_join(sender_thread, NULL);
-	pthread_join(receiver_thread, NULL);
+	// // Wait for threads to finish
+	// pthread_join(sender_thread, NULL);
+	// pthread_join(receiver_thread, NULL);
 
-	free(packet._IO_buf_base);
+	// free(packet._IO_buf_base);
 
 	return 0;
 }

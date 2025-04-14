@@ -53,8 +53,7 @@ __CJLF_GENERICS *send_packet_thread(void *arg) {
 		hdr.msg_iov = &iov;
 		hdr.msg_iovlen = sizeof(char);
 
-		// unionise this
-		sendmsg(ctx->client_sockfd, &hdr, 0);
+		sendmsg(ctx->socket, &hdr, 0);
 		free(get_packet);
 	};
 
@@ -68,9 +67,8 @@ __CJLF_GENERICS *receive_packet_thread(void *arg) {
 
 	for (;;) {
 		struct __packet *pkt = xmalloc(sizeof(struct __packet));
-		ssize_t len =
-		    recvfrom(ctx->client_sockfd, pkt, sizeof(Packet), 0,
-			     (struct sockaddr *)&src_addr, &addr_len);
+		ssize_t len = recvfrom(ctx->socket, pkt, sizeof(Packet), 0,
+				       (struct sockaddr *)&src_addr, &addr_len);
 
 		if (len < 0) {
 			free(pkt);
