@@ -40,8 +40,13 @@ typedef struct __mesh_node {
 	// Pointer to the next node in the mesh
 	struct __mesh_node *next;
 
-	/*TOD0*/
+	/*TODO */
 	i8__CJLF neighbor_count;
+
+	// ok hear me out DNS for Node, Nobody is seriously going to remember
+	// IP, atleast we can figure out how to get messages sent over specific
+	// username, i will figure this out.
+	char *name;
 } MeshNode;
 
 /* Mesh network graph holding all nodes in the mesh */
@@ -66,7 +71,7 @@ OMENAMESH_API __CJLF_GENERICS handle_client_data(int client_fd, int index);
  * @param port - The port number for the node.
  * @return Pointer to the created MeshNode.
  */
-OMENAMESH_API MeshNode *create_node(const i8__CJLF *ip, int port);
+OMENAMESH_API MeshNode *create_node(const i8__CJLF *ip, int port, const char *);
 
 /**
  * Adds a node to the mesh graph.
@@ -121,11 +126,13 @@ OMENAMESH_API __CJLF_GENERICS receive_message(MeshNode *node, Packet *pkt);
  * @param src - The sender node.
  * @param dest - The recipient node.
  * @param filepath - Path to the file to be sent.
+ * @param status - status
  * @return true if the file transfer started successfully, false otherwise.
  */
-OMENAMESH_API bool send_file(MeshNode *src,
+OMENAMESH_API void send_file(MeshNode *src,
 			     MeshNode *dest,
-			     const char *filepath);
+			     const char *filepath,
+			     bool *status);
 
 /**
  * Handles receiving a file at a given node.
@@ -150,6 +157,6 @@ OMENAMESH_API __CJLF_GENERICS *mesh_daemon(__CJLF_GENERICS *arg);
 #include <sys/socket.h>
 
 /*WIFI DIRECT*/
-i32__CJLF get_local_ip(char *buffer, i64__CJLF len);
+__CJLF_GENERICS get_local_ip(char *buffer, i64__CJLF len, bool *status);
 
 #endif /* NET__H*/

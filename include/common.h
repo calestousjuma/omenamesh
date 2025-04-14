@@ -8,12 +8,18 @@
 
 #define COMMON_H
 
-/*! common headers*/
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "types.h"
+typedef struct __queue_t {
+	struct __queue_t *front;
+	struct __queue_t *rear;
+	i64__CJLF size;
+} Queue;
+
+typedef struct __array {
+	i64__CJLF *members;
+	i64__CJLF cap;
+	i64__CJLF len;
+} ArrayList;
 
 /*!
  *! A VirtualPacket represents a packet being sent over the virtual mesh
@@ -58,16 +64,15 @@ typedef struct __virtual_packet {
  */
 struct __virtual_header {
 	/* Upper 16 bits for metadata, lower 48 bits for payload data */
-	uint64_t metadata;
-
-	uint64_t toAddr : 48;
-	uint64_t toPort : 16;
-	uint64_t fromAddr : 48;
-	uint64_t fromPort : 16;
-	uint64_t lastHopAddr : 48;
-	uint64_t hopCount : 8;
-	uint64_t maxHops : 8;
-	uint64_t payloadSize : 16;
+	u64__CJLF metadatau64__CJLF;
+	u64__CJLF toAddr : 48;
+	u64__CJLF toPort : 16;
+	u64__CJLF fromAddr : 48;
+	u64__CJLF fromPort : 16;
+	u64__CJLF lastHopAddr : 48;
+	u64__CJLF hopCount : 8;
+	u64__CJLF maxHops : 8;
+	u64__CJLF payloadSize : 16;
 };
 
 /*page table entries virtual & real IP*/
@@ -80,29 +85,40 @@ extern unsigned int hash_virtual_ip(const char *ip);
 extern bool hash_insert_virtual_ips(char *ip);
 #define UNUSED(x) (void)(x)
 
+/*cursor for our seed table*/
+typedef enum {
+	_UNUSED = 0,
+	_USED,
+	_SPOILT,
+} VirtualIpState;
+
 typedef struct __table {
 	char **entries;
 	char *ip;
+	i64__CJLF cursor;
+	VirtualIpState *flags;
 } Table;
 
-/*table of virtual IPs, defination in random_map.c*/
-extern struct __table *tables;
+OMENAMESH_API char *get_next_virtual_ip();
+OMENAMESH_API char *hash_lookup(const char *virtual_ip);
+
+OMENAMESH_API struct __table *tables;
 
 #define FF (unsigned char)~0
 
 /*! FF:FF:FF */
-#define BROADCAST_IP(ip)                                          \
-	do {                                                      \
-		snprintf(ip, sizeof(ip), "%d:%d:%d", FF, FF, FF); \
+#define BROADCAST_IP(ip)                                                 \
+	do {                                                             \
+		snprintf(ip, sizeof(ip), "%d.%d.%d.%d", FF, FF, FF, FF); \
 	} while (0)
 
 #define SEED 10
 #define ADDRESS_LEN 16
 
 /*!mem.c*/
-extern void *xcalloc(size_t members, size_t block);
-extern void *xmalloc(size_t block);
-void *xrealloc(void *oldptr, size_t new_size);
+extern void *xcalloc(i64__CJLF members, i64__CJLF block);
+extern void *xmalloc(i64__CJLF block);
+void *xrealloc(__CJLF_GENERICS *oldptr, i64__CJLF new_size);
 
 #define SWAP(T, a, b)    \
 	do {             \
@@ -117,15 +133,14 @@ void *xrealloc(void *oldptr, size_t new_size);
 		       __VA_ARGS__);                                      \
 		exit(1);                                                  \
 	} while (0)
-#define UNREACHABLE(...)                                                \
-	do {                                                            \
-		printf("%s:%d: UNREACHABLE: %s \n", __FILE__, __LINE__, \
-		       __VA_ARGS__);                                    \
-		exit(1);                                                \
-	} while (0)
 
-/*! 🪐*/
-extern void seed_virtual_ips(size_t seed_count);
-extern void initialize_table(size_t cap, size_t block);
+/*! before everything else, can we just have 100 virual IPs ready? */
+BEFORE OMENAMESH_API __CJLF_GENERICS seed_virtual_ips(i64__CJLF seed_count);
+
+/*Make Local? */
+OMENAMESH_API __CJLF_GENERICS initialize_table(i64__CJLF cap, i64__CJLF block);
+
+/*TODO file snif.c, find a good name for the file*/
+OMENAMESH_API __CJLF_GENERICS ___confirm_broadcast_sent();
 
 #endif

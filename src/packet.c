@@ -1,107 +1,108 @@
 #include "packet.h"
+#include "lock.h"
 
+// TODO!  MACRO THIS
 i8__CJLF is_packet_type(Packet_TYPE pType) {
 	return pType & PACKET_MASK;
 }
 
-static LockManager *packet_lock;
-
 /* Mutex for synchronization (locking) */
-// static pthread_mutex_t packet_lock = PTHREAD_MUTEX_INITIALIZER;
-
-/* Queue packet - Add a packet to the queue & keep the writing as atomic as
+/* queue packet - Add a packet to the queue & keep the writing as atomic as
  * possible, Locking to prevent simultaneous packet handling */
-__CJLF_GENERICS queue_packet(PacketQueue *queue, Packet *pkt) {
-	acquire_lock(packet_lock, 0, 0);
 
-	if (queue->rear == NULL) {
+__CJLF_GENERICS queue_packet(PacketQueue *queue, Packet *pkt) {
+	acquire_lock(global_lock_manager, 0, 0);
+
+	if (queue->rear == Nil) {
 		queue->front = queue->rear = pkt;
 	} else {
 		queue->rear->next = pkt;
 		queue->rear = pkt;
 	}
-	release_lock(packet_lock, queue->size);
+	release_lock(global_lock_manager, queue->size);
 	queue->size++;
 }
 
 /* Remove and return the front packet of the queue */
 Packet *dequeue_packet(PacketQueue *queue) {
-	acquire_lock(packet_lock, 0, 0);  // Lock to ensure thread safety
+	acquire_lock(global_lock_manager, 0, 0);
 
-	if (queue->front == NULL) {
+	if (queue->front == Nil)
 		/* No packets in queue */
-		release_lock(packet_lock, queue->size);
-		return 0;
-	}
+		goto defer;
 
 	Packet *pkt = queue->front;
 	queue->front = queue->front->next;
-	if (queue->front == NULL) {
-		queue->rear = NULL;
-	}
-	release_lock(packet_lock, queue->size);
+	if (queue->front == Nil)
+		queue->rear = Nil;
+
+	release_lock(global_lock_manager, queue->size);
 	queue->size--;
 	return pkt;
+
+defer:
+	release_lock(global_lock_manager, queue->size);
+	return 0;
 }
 
-#include "debug.h"
+#include "common.h"
 
-/* Forward packet - This function simulates sending/forwarding a packet */
+/* Forward packet - This function simulates sending/forwarding a packet
+ */
 __CJLF_GENERICS forward_packet(PacketQueue *queue, Packet *pkt) {
-	OMENA_MESH_LOG(1, "Forwarding packet with seq_num: %d\n", pkt->seq_num);
+	//! TODO
+	//! THIS IS STUPID, WE CANT BE STARTING A NEW SOCKET EVERYTIME,
+	//! JUST ADD THIS AS PACKET METADATA SO WHEN ONE SOCKET OPENS
+	//! THAT IS USED FOR EVERYTHING, ALSO SOFT RLIMIT FOR NOFILE IS
+	//! 1024, EVERRY ROUTINE WAKING UP A SOCKET IS NOT COOL, SO
+	//! PACKET SHOULD HAVE MORE METADATA
+	int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockfd < 0)
+		goto defer;
+	/* use  virtual → real IP resolver */
+	char *ip = hash_lookup(pkt->dest_ip);
+	if (ip == Nil)
+		goto defer;
 
-	/*handle all packets*/
-	switch (pkt->type) {
-		case PACKET_TYPE_DATA:
-			OMENA_MESH_TODO("TODO!");
-			break;
-		case PACKET_TYPE_HANDSHAKE:
-			OMENA_MESH_TODO("TODO!");
-			break;
-		case PACKET_TYPE_ACK:
-			OMENA_MESH_TODO("TODO!");
-			break;
-		case PACKET_TYPE_HELLO:
-			OMENA_MESH_TODO("TODO!");
-			break;
-		case PACKET_TYPE_AUTH:
-			OMENA_MESH_TODO("TODO!");
-			break;
-		case PACKET_TYPE_ERROR:
-			OMENA_MESH_TODO("TODO!");
-			break;
-		default:
-			OMENA_MESH_TODO("TODO!");
-	}
+	struct sockaddr_in dest;
 
+	dest.sin_family = AF_INET;
+	dest.sin_port = htons(PORT);
+
+	inet_pton(AF_INET, ip, &dest.sin_addr);
+
+	ssize_t sent = sendto(sockfd, pkt, sizeof(Packet), 0,
+			      (struct sockaddr *)&dest, sizeof(dest));
+	if (sent < 0)
+		goto defer;
+
+defer:
+	if (sockfd > 0)
+		close(sockfd);
 	return;
 }
 
 /* Handle packet - Process received packets */
 __CJLF_GENERICS handle_packet(PacketQueue *queue, Packet *pkt, char *my_ip) {
 	switch (pkt->type) {
-		case PACKET_TYPE_DATA:
-			OMENA_MESH_LOG(1, "Handling data packet: %s\n",
-				       pkt->data);
+		case NORMAL:
+		case HANDSHAKE:
+			perform_handshake(queue, pkt, my_ip);
 			break;
-		case PACKET_TYPE_HANDSHAKE:
-			OMENA_MESH_LOG(1, "Processing handshake packet\n");
+		case ACK:
+			handle_acknowledgment(pkt);
 			break;
-		case PACKET_TYPE_ACK:
-			OMENA_MESH_LOG(1, "Processing acknowledgment packet\n");
+		case HELLO:
+			discover_node(queue, pkt, my_ip);
 			break;
-		case PACKET_TYPE_HELLO:
-			OMENA_MESH_LOG(1, "Handling node discovery packet\n");
+		case AUTH:
+			authenticate_node(queue, pkt);
 			break;
-		case PACKET_TYPE_AUTH:
-			OMENA_MESH_LOG(
-			    1, "Processing authentication request packet\n");
-			break;
-		case PACKET_TYPE_ERROR:
-			OMENA_MESH_LOG(1, "Error notification received: %s\n",
-				       pkt->data);
+		case PACKET_ERROR:
+			handle_error(pkt->data);
 			break;
 		default:
-			OMENA_MESH_LOG(2, "AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH\n");
+			handle_unknown_packet(pkt);
+			break;
 	}
 }

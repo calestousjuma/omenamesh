@@ -3,7 +3,7 @@
 
 LockManager *global_lock_manager = 0;
 
-GLOBAL_CONSTRUCTOR __CJLF_GENERICS lock_init() {
+BEFORE __CJLF_GENERICS lock_init() {
 	global_lock_manager = xmalloc(sizeof(*global_lock_manager));
 	for (int i = 0; i < MAX_LOCKS; i++)
 		atomic_store(&global_lock_manager->locks[i].locked, false);
@@ -62,12 +62,12 @@ __CJLF_GENERICS queue_lock_request(
     __CJLF_GENERICS (*callback)(__CJLF_GENERICS *arg),
     __CJLF_GENERICS *arg) {
 	LockRequestNode *new_request =
-	    (LockRequestNode *)malloc(sizeof(LockRequestNode));
+	    (LockRequestNode *)xmalloc(sizeof(LockRequestNode));
 	new_request->callback = callback;
 	new_request->arg = arg;
 	new_request->next = Nil;
 
-	// Add the new request to the end of the queue
+	/* Add the new request to the end of the queue */
 	if (atomic_load(&manager->request_queue.size) == 0)
 		manager->request_queue.front = new_request;
 	else
@@ -79,9 +79,8 @@ __CJLF_GENERICS queue_lock_request(
 
 /*Dequeue a lock request from the queue */
 LockRequestNode *dequeue_lock_request(LockManager *manager) {
-	if (atomic_load(&manager->request_queue.size) == 0) {
+	if (atomic_load(&manager->request_queue.size) == 0)
 		return Nil;
-	}
 
 	LockRequestNode *front_request = manager->request_queue.front;
 	manager->request_queue.front = front_request->next;

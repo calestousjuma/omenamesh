@@ -1,10 +1,9 @@
 
-#include <stdio.h>
+// #include <stdio.h>
 #ifndef DEBUG
-#define DEBUG 1
+#define DEBUG
 
-/*TODO, remove LOG LEVEL repetition in other macros & use OMENA_MESH_LOG & add
- * colors */
+#define OMENA_MESH_TODO(todo, ...) ;
 
 #define RED "\033[1;31m"
 #define GREEN "\033[1;32m"
@@ -13,28 +12,21 @@
 #define RESET "\033[0m"
 #define UNDERLINE "\033[4m"
 
-#define OMENA_MESH_TODO(todo)                                         \
-	do {                                                          \
-		fprintf(stderr, "TODO: %s   %s:%d\n", todo, __FILE__, \
-			__LINE__);                                    \
-	} while (0);
-
 #define LOG_LEVEL_INFO 1
 #define LOG_LEVEL_WARN 2
 #define LOG_LEVEL_ERROR 3
 #define LOG_LEVEL_DEBUG 4
 
 #ifndef LOG_LEVEL
-
 /* Default log level is DEBUG */
 #define LOG_LEVEL LOG_LEVEL_DEBUG
 #endif /*! LOG_LEVEL*/
 
 #define OMENA_MESH_LOG(level, fmt, ...)                                       \
 	do {                                                                  \
-		if (level >= LOG_LEVEL) {                                     \
-			const char *level_str = NULL;                         \
-			const char *color = RESET;                            \
+		const char *level_str = "";                                   \
+		const char *color = "";                                       \
+		if ((level) >= LOG_LEVEL) {                                   \
 			switch (level) {                                      \
 				case LOG_LEVEL_INFO:                          \
 					level_str = "INFO";                   \
@@ -57,9 +49,10 @@
 					color = RESET;                        \
 					break;                                \
 			}                                                     \
-			fprintf(stdout, "%s%s: %s:%d: " fmt "%s\n", color,    \
+			fprintf(stderr, "%s%s: %s:%d: " fmt "%s\n", color,    \
 				level_str, __FILE__, __LINE__, ##__VA_ARGS__, \
 				RESET);                                       \
+			fflush(stderr);                                       \
 		}                                                             \
 	} while (0)
 

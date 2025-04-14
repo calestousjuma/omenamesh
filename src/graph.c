@@ -1,4 +1,5 @@
 
+#include "common.h"
 #include "net.h"
 
 __CJLF_GENERICS init_graph_network(MeshGraph *graph, i8__CJLF vertixxx) {
@@ -6,15 +7,14 @@ __CJLF_GENERICS init_graph_network(MeshGraph *graph, i8__CJLF vertixxx) {
 	for (int q = 0; q < vertixxx; vertixxx++)
 		graph->nodes[q] = Nil;
 }
-MeshNode *create_node(const i8__CJLF *ip, int port) {
-	MeshNode *node = (MeshNode *)malloc(sizeof(MeshNode));
-	if (node == 0)
-		return 0; /*! EXHAUSTED MEM*/
+MeshNode *create_node(const i8__CJLF *ip, int port, const char *username) {
+	MeshNode *node = xmalloc(sizeof(*node));
 
 	strncpy((char *)node->ip, (char *)ip, ADDRESS);
 	node->port = port;
 	node->connected = false;
 	node->node_packets = Nil;
+	node->name = xmalloc(strlen(username));
 
 	return node;
 }
@@ -67,9 +67,7 @@ bool send_message(MeshNode *src,
 	if (!src || !dest)
 		return false;
 
-	Packet *pkt = (Packet *)malloc(sizeof(Packet));
-	if (!pkt)
-		return false;
+	Packet *pkt = (Packet *)xmalloc(sizeof(Packet));
 
 	pkt->type = type;
 	strcpy((char *)pkt->src_ip, (const char *)src->ip);
@@ -77,11 +75,11 @@ bool send_message(MeshNode *src,
 	pkt->payload_size = strlen(msg);
 	strncpy(pkt->data, msg, MAX_DATA_SIZE);
 
-	OMENA_MESH_LOG(1, "Message sent from %s to %s: %s\n", src->ip, dest->ip,
-		       msg);
+	printf("Message sent from %s to %s: %s\n", src->ip, dest->ip, msg);
 	return true;
 }
 
+// HUHHHHH ?
 __CJLF_GENERICS receive_message(MeshNode *node, Packet *pkt) {
 	if (!node || !pkt)
 		return;
@@ -89,15 +87,17 @@ __CJLF_GENERICS receive_message(MeshNode *node, Packet *pkt) {
 }
 
 #include <fcntl.h>
-bool send_file(MeshNode *src, MeshNode *dest, const char *filepath) {
+
+void send_file(MeshNode *src,
+	       MeshNode *dest,
+	       const char *filepath,
+	       bool *status) {
 	/*! UNIX VFS*/
 	int fd = open(filepath, O_RDONLY);
 	if (fd < 0)
-		return false;
+		*status = false;
 
-	Packet *pkt = (Packet *)malloc(sizeof(Packet));
-	if (!pkt)
-		return false;
+	Packet *pkt = (Packet *)xmalloc(sizeof(Packet));
 
 	pkt->type = PACKET_TYPE_DATA;
 	strcpy((char *)pkt->src_ip, (char *)src->ip);
@@ -111,7 +111,7 @@ bool send_file(MeshNode *src, MeshNode *dest, const char *filepath) {
 	}
 
 	close(fd);
-	return true;
+	*status = true;
 }
 
 /*remember to free this*/
@@ -159,23 +159,21 @@ bool receive_file(MeshNode *node, Packet *pkt) {
 	fwrite(pkt->data, 1, pkt->payload_size, file);
 	fclose(file);
 
-	OMENA_MESH_LOG(1, "File received at %s\n", node->ip);
+	printf("File receivedat %s\n", node->ip);
 	return true;
 }
 
-/*Not exactly a daemon, THIS IS EVENTUALLY GOING TO RUN ON ANDROID AND I WANT
- * MAXIMUM PORTABILITY 🤞*/
+// TODO , this is not a daemon
 __CJLF_GENERICS *mesh_daemon(void *arg) {
 	MeshNode *node = (MeshNode *)arg;
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0)
 		return Nil;
 
-	struct sockaddr_in server_addr = {
-		.sin_family = AF_INET,
-		.sin_addr.s_addr = INADDR_ANY,
-		.sin_port = htons(node->port),
-	};
+	struct sockaddr_in server_addr;
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_port = htons(node->port);
 
 	if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) <
 	    0)

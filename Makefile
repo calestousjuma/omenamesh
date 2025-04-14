@@ -1,7 +1,8 @@
 
-CFLAGS :=  -fPIC -Iinclude -Isrc -Ivirtual
+CFLAGS := -g -O0 -fPIC -Iinclude -Isrc 
 LDFLAGS := -shared
 BUILD_DIR := build
+ENTRY := boot
 
 SRC_DIR := src
 VIRT_DIR := virtual
@@ -13,8 +14,11 @@ OBJ_FILES := $(patsubst %.c, $(BUILD_DIR)/%.o, $(notdir $(ALL_SRC)))
 
 SHARED_LIB := $(BUILD_DIR)/libomena.so
 
-all: $(SHARED_LIB)
 
+# CFLAGS += ./Iinclude
+all: $(SHARED_LIB) | boot
+	@$(CC) -I./include -o $(BUILD_DIR)/$(ENTRY) $(ENTRY)/*.c ./$< && ./$(BUILD_DIR)/$(ENTRY)
+	@#cp $(BUILD_DIR)/$< bindings
 $(SHARED_LIB): $(OBJ_FILES) | $(BUILD_DIR)
 	@echo "Linking shared library..."
 	@$(CC) $(LDFLAGS) -o $@ $(OBJ_FILES)

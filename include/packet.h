@@ -7,7 +7,7 @@
 #define ADDRESS INET_ADDRSTRLEN
 
 /*TODO, read about linkage w/ static*/
-static void set_nonblocking(int sock) {
+static __CJLF_GENERICS set_nonblocking(int sock) {
 	int flags = fcntl(sock, F_GETFL, 0);
 	fcntl(sock, F_SETFL, flags | O_NONBLOCK);
 }
@@ -40,13 +40,14 @@ typedef enum {
 	PACKET_ERROR
 } Packet_TYPE;
 
+// SOCKET SOCKET SOCKET SOCKET SOCKET SOCKET
 typedef struct __packet {
 	/* Packet type */
 	u8__CJLF type;
 	/* Source IP*/
-	i8__CJLF src_ip[ADDRESS];
+	char src_ip[ADDRESS];
 	/* Destination IP*/
-	i8__CJLF dest_ip[ADDRESS];
+	char dest_ip[ADDRESS];
 	/* Sequence number (for ordering)*/
 	u16__CJLF seq_num;
 	/* Time-to-Live (hops before discard)*/
@@ -88,7 +89,30 @@ typedef struct RoutingTable {
 #include <sys/select.h>
 #include <sys/socket.h>
 
-#include "debug.h"
+/* Process the contents of a normal data packet */
+OMENAMESH_API_T __CJLF_GENERICS process_data(char *data);
 
-#include "lock.h"
+/* Perform handshake operations for establishing a connection */
+OMENAMESH_API_T __CJLF_GENERICS perform_handshake(PacketQueue *queue,
+						  Packet *pkt,
+						  char *my_ip);
+
+/* Handle acknowledgment of previously sent packets */
+OMENAMESH_API_T __CJLF_GENERICS handle_acknowledgment(Packet *pkt);
+
+/* Discover or register a new node from a HELLO packet */
+OMENAMESH_API_T __CJLF_GENERICS discover_node(PacketQueue *queue,
+					      Packet *pkt,
+					      char *my_ip);
+
+/* Process an authentication request from another node */
+OMENAMESH_API_T __CJLF_GENERICS authenticate_node(PacketQueue *queue,
+						  Packet *pkt);
+
+/* Handle an error reported in a PACKET_ERROR packet */
+OMENAMESH_API_T __CJLF_GENERICS handle_error(char *err);
+
+/* Process packets of unknown or unsupported types */
+OMENAMESH_API_T __CJLF_GENERICS handle_unknown_packet(Packet *pkt);
+
 #endif /*   !packet.h*/

@@ -4,7 +4,7 @@
 
 #define Nil 0
 
-#define GLOBAL_CONSTRUCTOR __attribute__((__constructor__))
+#define BEFORE __attribute__((__constructor__))
 #define AFTER __attribute__((__destructor__))
 
 #define OMENAMESH_API __attribute__((visibility("default"))) extern
@@ -20,6 +20,9 @@ typedef unsigned char u8__CJLF;
 typedef unsigned short u16__CJLF;
 typedef unsigned u32__CJLF;
 typedef unsigned long long u64__CJLF;
+
+/*! its really painful casting this type, it doesnt even make sense to typedef
+ * it*/
 typedef signed char i8__CJLF;
 typedef short i16__CJLF;
 typedef int i32__CJLF;
@@ -38,6 +41,5 @@ typedef void __CJLF_GENERICS;
 #include <stdlib.h>
 #include <string.h> /*string*/
 #include <unistd.h>
-#define SUCCESS !true
-#define FAILURE !false
+
 #endif /*! __CJLF_TYPES*/

@@ -79,8 +79,8 @@ typedef struct {
 
 extern LockManager *global_lock_manager;
 
-/*make the lock manager global*/
-GLOBAL_CONSTRUCTOR OMENAMESH_API __CJLF_GENERICS lock_init();
+/*make the lock manager global, uhhhhh? Look.*/
+BEFORE OMENAMESH_API __CJLF_GENERICS lock_init();
 
 __attribute__((__destructor__)) __CJLF_GENERICS destroy_lock();
 

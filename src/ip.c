@@ -1,108 +1,144 @@
 
-//! we will work with virtual IPs
+/*! LICENCED UNDER CJLF 2025(c)
+ *!
+ *! This file has hashmap for ip(real) value ip(virtual) key, the reason for the
+ *! hashmap is because the ip are generated in random fashion & yeah the map
+ *! helps to keep everything unique so we dont have ip conflict later in the
+ *! network, OK that is not actually the reason, the thing is different networks
+ *! have almost similar IP addresses, the idea is we map actual real IP
+ *! behind a virtual IP, when you share something across the network, the
+ *! virtual then maps to the real IP. IDK if that makes sense but that is
+ *! the whole idea behind our virtual IP addressing.
+ *!
+ *! OK this will make sense, y'know how we have virtual memory which is
+ *! translated to physical memory, blah blah TLB MMU PDE all that?. Yeah thats
+ *! it. You can do anything with the virtual memory (dereference, map files
+ *! ...etc except its not what the computer will see, Just an illusion for your
+ *! user process). If u got this far in the comment you're beautiful & deserve
+ *! the world :)
+ */
 
-// #include "net.h"
-// #include "route.h"
-// #include "types.h"
+#include "common.h"
+#include "types.h"
 
-// /* Dynamically discover IP instead of maintaining a list */
-// i32__CJLF get_local_ip(char *buffer, i64__CJLF len) {
-// 	struct ifaddrs *ifaddr, *ifa;
-// 	i32__CJLF family, found = 0;
+#define STRING (ADDRESS_LEN / 2)
 
-// 	if (getifaddrs(&ifaddr) == -1) {
-// 		perror("getifaddrs() failed");
-// 		return -1;
-// 	}
+struct __table *tables;
 
-// 	for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-// 		if (ifa->ifa_addr == NULL)
-// 			continue;
+void initialize_table(i64__CJLF cap, i64__CJLF block) {
+	tables = xmalloc(sizeof(*tables));
+	tables->entries = xcalloc(cap, block);
+	/*begin, FLAGS __UNSUED*/
+	tables->cursor = _UNUSED;
+	tables->flags = xcalloc(cap, sizeof(VirtualIpState));
+	return;
+}
 
-// 		family = ifa->ifa_addr->sa_family;
-// 		if (family == AF_INET || family == AF_INET6) {
-// 			if (getnameinfo(ifa->ifa_addr,
-// 					(family == AF_INET)
-// 					    ? sizeof(struct sockaddr_in)
-// 					    : sizeof(struct sockaddr_in6),
-// 					buffer, len, NULL, 0,
-// 					NI_NUMERICHOST) == 0) {
-// 				OMENA_MESH_LOG(1, "Interface: %s, IP: %s\n",
-// 					       ifa->ifa_name, buffer);
-// 				found = 1;
-// 				break;
-// 			}
-// 		}
-// 	}
+void seed_virtual_ips(i64__CJLF seed_count) {
+	initialize_table(seed_count, STRING);
+	/*! rxn for hashmap*/
+	for (int elements = 0; elements < seed_count; elements++) {
+		tables->ip = xmalloc(STRING);
+		snprintf(tables->ip, ADDRESS_LEN, "%d:%d:%d", rand() % 255,
+			 rand() % 255, rand() % 255);
+		if (hash_insert_virtual_ips(tables->ip)) {
+			tables->entries[elements] = tables->ip;
+			tables->flags[elements] = _UNUSED;
+		} else {
+			/*! 30 for 30, sza*/
+			elements--; /*one more time to make up for that*/
+		}
+	}
 
-// 	freeifaddrs(ifaddr);
-// 	return found ? 0 : -1;
-// }
+	return;
+}
 
-// __CJLF_GENERICS broadcast_presence() {
-// 	i32__CJLF udp_sock = socket(AF_INET, SOCK_DGRAM, 0);
-// 	if (udp_sock < 0)
-// 		return;
+char *get_next_virtual_ip() {
+	while (tables->cursor < 100) {
+		if (tables->flags[tables->cursor] == _UNUSED) {
+			tables->flags[tables->cursor] = _USED;
+			return tables->entries[tables->cursor++];
+		}
+		tables->cursor++;
+	}
+	return Nil;
+}
 
-// 	i32__CJLF broadcast = 1;
-// 	if (setsockopt(udp_sock, SOL_SOCKET, SO_BROADCAST, &broadcast,
-// 		       sizeof(broadcast)) < 0)
-// 		goto close_socket;
+typedef struct __entries_t {
+	char *ip;
+	struct __entries_t *next;
+} pde_t;
 
-// 	struct sockaddr_in addr = {
-// 		.sin_family = AF_INET,
-// 		.sin_port = htons(PORT),
-// 		.sin_addr.s_addr = inet_addr("255.255.255.255"),
-// 	};
+pde_t *hashmap[HASH_SIZE];
 
-// 	char *stmt = "DISCOVER";
-// 	if (sendto(udp_sock, stmt, strlen(stmt), 0, (struct sockaddr *)&addr,
-// 		   sizeof(addr)) < 0)
-// 		return;
+unsigned int hash_virtual_ip(const char *ip) {
+	unsigned hash = 5381; /*prime*/
+	while (*ip)
+		hash = ((hash << 5) + hash) + *ip++;
 
-// 	goto close_socket;
+	return hash % HASH_SIZE;
+}
 
-// close_socket:
-// 	close(udp_sock);
-// 	return;
-// }
+bool hash_insert_virtual_ips(char *ip) {
+	bool status = false;
+	unsigned index = hash_virtual_ip(ip);
 
-// __CJLF_GENERICS listen_for_discovery() {
-// 	i32__CJLF udp_sock = socket(AF_INET, SOCK_DGRAM, 0);
-// 	if (udp_sock < 0)
-// 		return;
+	pde_t *cur = hashmap[index];
+	for (pde_t *k = cur; cur; k = k->next)
+		if (strcmp(k->ip, ip) == 0)
+			return status;
 
-// 	struct sockaddr_in addr = {
-// 		.sin_family = AF_INET,
-// 		.sin_port = htons(PORT),
-// 		.sin_addr.s_addr = INADDR_ANY,
-// 	};
+	status = true;
+	pde_t *new = xmalloc(sizeof *new);
+	new->ip = ip;
+	new->next = hashmap[index];
+	hashmap[index] = new;
 
-// 	if (bind(udp_sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-// 		return;
+	return status;
+}
 
-// 	i8__CJLF buffer[MAX_DATA_SIZE];
-// 	while (1) {
-// 		struct sockaddr_in sender_addr;
-// 		socklen_t addr_len = sizeof(sender_addr);
-// 		i32__CJLF bytes_received =
-// 		    recvfrom(udp_sock, buffer, sizeof(buffer) - 1, 0,
-// 			     (struct sockaddr *)&sender_addr, &addr_len);
+char *hash_lookup(const char *virtual_ip) {
+	unsigned index = hash_virtual_ip(virtual_ip);
+	pde_t *entry = hashmap[index];
 
-// 		if (bytes_received < 0) {
-// 			perror("recvfrom() failed");
-// 			continue;
-// 		}
+	for (; entry; entry = entry->next)
+		if (strcmp(entry->ip, virtual_ip) == 0)
+			return entry->ip;
 
-// 		buffer[bytes_received] = Nil;
-// 		char sender_ip[INET_ADDRSTRLEN];
-// 		inet_ntop(AF_INET, &sender_addr.sin_addr, sender_ip,
-// 			  INET_ADDRSTRLEN);
-// 		printf("[DISCOVERY] Found peer: %s\n", sender_ip);
+	return Nil;
+}
 
-// 		i32__CJLF new_peer = connect_to_peer(sender_ip);
-// 		if (new_peer > 0) {
-// 			add_route(sender_ip, udp_sock);
-// 		}
-// 	}
-// }
+#include "net.h"
+// this is what is mapped against the virtual IP hash Table
+void get_local_ip(char *buffer, i64__CJLF len, bool *status) {
+	struct ifaddrs *ifaddr, *ifa;
+	*status = false;
+
+	if (getifaddrs(&ifaddr) == -1)
+		return;
+
+	for (ifa = ifaddr; ifa; ifa = ifa->ifa_next) {
+		if (ifa->ifa_addr == NULL || ifa->ifa_name == NULL)
+			continue;
+
+		if (ifa->ifa_addr->sa_family != AF_INET)
+			continue;
+
+		/*! Skip loopback */
+		if (strcmp(ifa->ifa_name, "lo") == 0)
+			continue;
+
+		if (getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in),
+				buffer, len, NULL, 0, NI_NUMERICHOST) == 0) {
+			if (strncmp(buffer, "127.", 4) == 0)
+				continue;
+
+			printf("[IP Discovery] Interface: %s, IP: %s\n",
+			       ifa->ifa_name, buffer);
+			*status = true;
+			break;
+		}
+	}
+
+	freeifaddrs(ifaddr);
+}
