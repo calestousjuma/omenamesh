@@ -1,4 +1,5 @@
 lib
+.cache
 *.so
 docs/*.pl
 *.sh
