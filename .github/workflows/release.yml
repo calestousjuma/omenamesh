@@ -1,0 +1,39 @@
+name: Monthly Release
+
+on:
+    schedule:
+        # Runs at midnight UTC on the first day of every month
+        - cron: "0 0 1 * *"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Android SDK
+              run: |
+                  sudo apt update
+                  sudo apt install -y openjdk-11-jdk
+                  wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip
+                  unzip commandlinetools-linux-7583922_latest.zip -d $HOME/android-sdk
+                  echo "export ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+                  echo "export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH" >> $GITHUB_ENV
+
+                  # Accept licenses and install necessary SDK components
+                  yes | sdkmanager --licenses
+                  sdkmanager "platforms;android-30" "build-tools;30.0.3"
+
+            - name: make shared library before build
+              run: make
+
+            - name: Build Android Release
+              run: |
+                  ./gradlew assembleRelease
+
+            - name: github Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: |
+                      build/*.apk
