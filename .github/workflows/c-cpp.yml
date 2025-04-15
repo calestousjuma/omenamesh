@@ -12,5 +12,5 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
-            - name: create shared lib
+            - name: lib
               run: make
