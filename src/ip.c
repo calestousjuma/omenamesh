@@ -19,13 +19,12 @@
  */
 
 #include "common.h"
-#include "types.h"
 
-#define STRING (ADDRESS_LEN / 2)
+#define STRING (ADDRESS_LEN * 2)
 
 struct __table *tables;
 
-void initialize_table(i64__CJLF cap, i64__CJLF block) {
+__CJLF_GENERICS initialize_table(i64__CJLF cap, i64__CJLF block) {
 	tables = xmalloc(sizeof(*tables));
 	tables->entries = xcalloc(cap, block);
 	/*begin, FLAGS __UNSUED*/
@@ -34,13 +33,14 @@ void initialize_table(i64__CJLF cap, i64__CJLF block) {
 	return;
 }
 
-void seed_virtual_ips(i64__CJLF seed_count) {
-	initialize_table(seed_count, STRING);
+__CJLF_GENERICS seed_virtual_ips() {
+#define DEFAULT 100
+	initialize_table(DEFAULT, STRING);
 	/*! rxn for hashmap*/
-	for (int elements = 0; elements < seed_count; elements++) {
+	for (int elements = 0; elements < DEFAULT; elements++) {
 		tables->ip = xmalloc(STRING);
-		snprintf(tables->ip, ADDRESS_LEN, "%d:%d:%d", rand() % 255,
-			 rand() % 255, rand() % 255);
+		snprintf(tables->ip, STRING, "%d:%d:%d:%d", rand() % 255,
+			 rand() % 255, rand() % 255, rand() % 255);
 		if (hash_insert_virtual_ips(tables->ip)) {
 			tables->entries[elements] = tables->ip;
 			tables->flags[elements] = _UNUSED;
@@ -54,7 +54,8 @@ void seed_virtual_ips(i64__CJLF seed_count) {
 }
 
 char *get_next_virtual_ip() {
-	while (tables->cursor < 100) {
+#define DEFAULTS 100
+	while (tables->cursor < DEFAULTS) {
 		if (tables->flags[tables->cursor] == _UNUSED) {
 			tables->flags[tables->cursor] = _USED;
 			return tables->entries[tables->cursor++];
@@ -84,7 +85,7 @@ bool hash_insert_virtual_ips(char *ip) {
 	unsigned index = hash_virtual_ip(ip);
 
 	pde_t *cur = hashmap[index];
-	for (pde_t *k = cur; cur; k = k->next)
+	for (pde_t *k = cur; k; k = k->next)  // BUG
 		if (strcmp(k->ip, ip) == 0)
 			return status;
 

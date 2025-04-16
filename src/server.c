@@ -1,11 +1,9 @@
 
-#include <stdio.h>
 #include "common.h"
-#include "debug.h"
 #include "net.h"
-#include "types.h"
 
 static i32__CJLF virtual_ip_table_index = 0;
+
 __CJLF_GENERICS send_udp_broadcast() {
 	i32__CJLF sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -34,14 +32,21 @@ __CJLF_GENERICS send_udp_broadcast() {
 
 	char message[128];
 
-	snprintf(message, sizeof(message),
-		 "oh hey look at me [virtual IP =%s real IP =%s & my PORT=%d",
-		 tables->entries[virtual_ip_table_index++], real_ip, PORT);
+	//! TODO
+	printf("OMENA_MESH_API_STARTED\n");
+
+	snprintf(
+	    message, sizeof(message),
+	    "[virtual IP <%s:%d> mapped to real IP <%s:%d> ]",
+	    tables->entries[virtual_ip_table_index++] /*CAN THIS OVERFLOW?*/,
+	    PORT, real_ip, PORT);
 
 	if (sendto(sockfd, message, strlen(message), 0,
 		   (struct sockaddr *)&broadcast_addr,
 		   sizeof(broadcast_addr)) < 0)
 		goto defer;
+
+	return;
 
 defer:
 	perror("Server Error");

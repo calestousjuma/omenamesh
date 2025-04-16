@@ -3,30 +3,27 @@
 //! This goes before main, wakes up a socket for client & server
 //! routine ThreadContext *boot_comm_thread_context()
 //! & is designed with thread safety in mind.
+
 #include "common.h"
 #include "context.h"
-#include "types.h"
 
 PacketQueue send_queue;
 PacketQueue recv_queue;
 
 ThreadContext *boot_comm_thread_context() {
 #define KILL_EVERYTING_I_MEAN_EVEYTHING 1
-	int server = socket(AF_INET, SOCK_DGRAM, 0);
+	int server = socket(AF_INET, SOCK_STREAM, 0);
+
 	if (server < 0)
 		goto kill;
-	int client = socket(AF_INET, SOCK_DGRAM, 0);
-	if (client < 0)
-		goto kill;
 	ThreadContext *ctx = xmalloc(sizeof(ThreadContext));
+	ctx->socket = server;
 	strncpy(ctx->my_ip, get_next_virtual_ip(), ADDRESS);
 	ctx->recv_q = &recv_queue;
 	ctx->send_q = &send_queue;
 
 	return ctx;
 kill:
-	if (server > 0)
-		close(server);
 	_Exit(KILL_EVERYTING_I_MEAN_EVEYTHING);
 }
 
@@ -51,7 +48,7 @@ __CJLF_GENERICS *send_packet_thread(void *arg) {
 		hdr.msg_name = &dest_addr;
 		hdr.msg_namelen = sizeof(dest_addr);  // wait?
 		hdr.msg_iov = &iov;
-		hdr.msg_iovlen = sizeof(char);
+		hdr.msg_iovlen = 1;
 
 		sendmsg(ctx->socket, &hdr, 0);
 		free(get_packet);

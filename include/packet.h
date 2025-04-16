@@ -12,8 +12,8 @@ static __CJLF_GENERICS set_nonblocking(int sock) {
 	fcntl(sock, F_SETFL, flags | O_NONBLOCK);
 }
 
-#define PORT 50000  ///! Nobody is here. so u shouldnt expect EADDRINUSE
 //! TODO handle EADDRINUSE
+#define PORT 8000
 #define INCASE_SOMEONE_IS_USING_THE_PORT
 
 i8__CJLF start_server_t();

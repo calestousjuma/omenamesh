@@ -15,7 +15,6 @@ OBJ_FILES := $(patsubst %.c, $(BUILD_DIR)/%.o, $(notdir $(ALL_SRC)))
 SHARED_LIB := $(BUILD_DIR)/libomena.so
 
 
-# CFLAGS += ./Iinclude
 all: $(SHARED_LIB) | boot
 	@$(CC) -I./include -o $(BUILD_DIR)/$(ENTRY) $(ENTRY)/*.c ./$< && ./$(BUILD_DIR)/$(ENTRY)
 	@#cp $(BUILD_DIR)/$< bindings

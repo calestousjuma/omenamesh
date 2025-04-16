@@ -135,7 +135,7 @@ void *xrealloc(void *oldptr, size_t new_size);
 	} while (0)
 
 /*! before everything else, can we just have 100 virual IPs ready? */
-BEFORE OMENAMESH_API __CJLF_GENERICS seed_virtual_ips(i64__CJLF seed_count);
+BEFORE OMENAMESH_API __CJLF_GENERICS seed_virtual_ips();
 
 /*Make Local? */
 OMENAMESH_API __CJLF_GENERICS initialize_table(i64__CJLF cap, i64__CJLF block);

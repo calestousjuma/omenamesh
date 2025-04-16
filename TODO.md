@@ -4,22 +4,24 @@
 
 | Feature                                   | Status      | Target Completion |
 | ----------------------------------------- | ----------- | ----------------- |
-| Mesh networking between 2 Android devices | DONE        | -                 |
-| Bridge node working                       | in-progress | -                 |
-| Web browser works through mesh            | Not started | -                 |
-| UI                                        | Not started | -                 |
-| bindings                                  | in-progress | -                 |
+| Mesh networking between 2 Android devices | DONE        | 1st May           |
+| Bridge node working                       | DONE        | 1st May           |
+| Web browser works through mesh            | Not started | 1st May           |
+| UI                                        | STARTED     | 1st May           |
+| bindings                                  | STARTED     | 1st May           |
 
 ## Alpha
 
-| Feature                                              | Status | Owner   | Due Date |
-| ---------------------------------------------------- | ------ | ------- | -------- |
-| Performant mesh-to-bridge web browsing, many devices | DONE   | phedwin | -        |
+| Feature                                              | Status | Assigned | Due Date |
+| ---------------------------------------------------- | ------ | -------- | -------- |
+| Performant mesh-to-bridge web browsing, many devices | DONE   | phedwin  | 1st May  |
 
 ## Beta Launch
 
-| Feature  | Status      | Owner | Due Date |
-| -------- | ----------- | ----- | -------- |
-| Add task | Not started | -     | -        |
-| Add task | Not started | -     | -        |
-| Add task | Not started | -     | -        |
+| Feature               | Status      | Assigned | Due Date |
+| --------------------- | ----------- | -------- | -------- |
+| splash screen(design) | in-progress | phedwin  | 1st May  |
+| web browser           | in-progress | phedwin  | 1st May  |
+| build APK             | in-progress | phedwin  | 1st May  |
+| node map              | in-progress | phedwin  | 1st May  |
+| file transfers        | complete    | phedwin  | 1st May  |
