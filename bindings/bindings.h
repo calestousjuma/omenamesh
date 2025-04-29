@@ -1,0 +1,5 @@
+
+#ifndef KOTLIN_BINDINGS
+#define KOTLIN_BINDINGS
+
+#endif  // BINDINGS

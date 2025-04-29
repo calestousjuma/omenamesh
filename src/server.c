@@ -43,7 +43,8 @@ __CJLF_GENERICS send_udp_broadcast() {
 
 	if (sendto(sockfd, message, strlen(message), 0,
 		   (struct sockaddr *)&broadcast_addr,
-		   sizeof(broadcast_addr)) < 0)
+		   sizeof(broadcast_addr)) < 0 &&
+	    status)
 		goto defer;
 
 	return;

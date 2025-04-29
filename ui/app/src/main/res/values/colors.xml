@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_plain_background">#FFFFFF</color>
+    <color name="colorBackground">#FAFAFA</color>       <!--grey 50-->
+    <!--non theme-->
+    <color name="indicatorConnected">#00A173</color>
+</resources>

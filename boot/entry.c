@@ -86,9 +86,9 @@ int main() {
 
 	// TODO! initiliaze connection from our table
 	// pthread_create(&send_thread, &send_attr, send_packet_thread,
-	// 	       (void *)ctx);
+	//    (void *)ctx);
 	// pthread_create(&receive_thread, &recv_attr, receive_packet_thread,
-	// 	       (void *)ctx);
+	//    (void *)ctx);
 
 	return 0;
 }
