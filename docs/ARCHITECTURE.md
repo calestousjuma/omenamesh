@@ -47,10 +47,3 @@ Packet Routing Between Nodes
 
 4. NAT or VPN Proxy: If a phone has internet, it acts as a proxy for all others.
 5. Handling Failures: If a route is broken, requeue packets and find another path.
-
-# Future plans
-
-1. bluetooth connectivity.
-2. Desktop support.
-3. write documentation.
-4. A website support & FAQ.

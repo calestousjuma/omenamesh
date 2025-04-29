@@ -30,6 +30,7 @@ jobs:
 
             - name: Build Android Release
               run: |
+                  cd ui
                   ./gradlew assembleRelease
 
             - name: github Release

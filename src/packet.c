@@ -85,24 +85,24 @@ defer:
 /* Handle packet - Process received packets */
 __CJLF_GENERICS handle_packet(PacketQueue *queue, Packet *pkt, char *my_ip) {
 	switch (pkt->type) {
-		case NORMAL:
-		case HANDSHAKE:
-			perform_handshake(queue, pkt, my_ip);
-			break;
-		case ACK:
-			handle_acknowledgment(pkt);
-			break;
-		case HELLO:
-			discover_node(queue, pkt, my_ip);
-			break;
-		case AUTH:
-			authenticate_node(queue, pkt);
-			break;
-		case PACKET_ERROR:
-			handle_error(pkt->data);
-			break;
-		default:
-			handle_unknown_packet(pkt);
-			break;
+		// case NORMAL:
+		// case HANDSHAKE:
+		// 	perform_handshake(queue, pkt, my_ip);
+		// 	break;
+		// case ACK:
+		// 	handle_acknowledgment(pkt);
+		// 	break;
+		// case HELLO:
+		// 	discover_node(queue, pkt, my_ip);
+		// 	break;
+		// case AUTH:
+		// 	authenticate_node(queue, pkt);
+		// 	break;
+		// case PACKET_ERROR:
+		// 	handle_error(pkt->data);
+		// 	break;
+		// default:
+		// 	handle_unknown_packet(pkt);
+		// 	break;
 	}
 }

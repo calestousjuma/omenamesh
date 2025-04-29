@@ -50,7 +50,7 @@ typedef struct __mesh_node {
 } MeshNode;
 
 /* Mesh network graph holding all nodes in the mesh */
-typedef struct {
+typedef struct __mesh_graph {
 	// Graph adjacency list
 	MeshNode *nodes[MAX_NODES];
 	// max out at MAX_NODES

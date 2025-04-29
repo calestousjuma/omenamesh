@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include "packet.h"
 
 void ___confirm_broadcast_sent() {
