@@ -2,13 +2,13 @@
 
 ## Proof of Concept
 
-| Feature                                   | Status      | Target Completion |
-| ----------------------------------------- | ----------- | ----------------- |
-| Mesh networking between 2 Android devices | DONE        | 1st May           |
-| Bridge node working                       | DONE        | 1st May           |
-| Web browser works through mesh            | Not started | 1st May           |
-| UI                                        | STARTED     | 1st May           |
-| bindings                                  | STARTED     | 1st May           |
+| Feature                                   | Status         | Target Completion |
+| ----------------------------------------- | -------------- | ----------------- |
+| Mesh networking between 2 Android devices | DONE           | 1st May           |
+| Bridge node working                       | DONE           | 1st May           |
+| Web browser works through mesh            | Not started    | 1st May           |
+| UI                                        | COMPLETE(well) | 1st May           |
+| bindings                                  | STARTED        | 1st May           |
 
 ## Alpha
 
